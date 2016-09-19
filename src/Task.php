@@ -2,16 +2,16 @@
 class Task
 {
     private $description;
+    private $category_id;
     private $id;
 
 //Constructor
-    function __construct($description, $id = null)
+    function __construct($description, $id = null, $category_id)
     {
         $this->description = $description;
         $this->id = $id;
+        $this->category_id = $category_id;
     }
-
-
 
 //Getter and Setters
     function setDescription($new_description)
@@ -29,10 +29,15 @@ class Task
         return $this->id;
     }
 
+    function getCategoryId()
+    {
+        return $this->category_id;
+    }
+
 //Regular Methods
     function save()
     {
-        $GLOBALS['DB']->exec("INSERT INTO tasks (description) VALUES ('{$this->getDescription()}');");
+        $GLOBALS['DB']->exec("INSERT INTO tasks (description, category_id) VALUES ('{$this->getDescription()}', {$this->getCategoryId()})");
         $this->id = $GLOBALS['DB']->lastInsertId();
         // array_push($_SESSION['list_of_tasks'], $this);
     }
@@ -46,11 +51,18 @@ class Task
         foreach($returned_tasks as $task) {
             $description = $task['description'];
             $id = $task['id'];
-            $new_task = new Task($description, $id);
+            $category_id = $task['category_id'];
+            $new_task = new Task($description, $id, $category_id);
             array_push($tasks, $new_task);
         }
         return $tasks;
         // return $_SESSION['list_of_tasks'];
+    }
+
+    static function deleteAll()
+    {
+        $GLOBALS['DB']->exec("DELETE FROM tasks;");
+        // $_SESSION['list_of_tasks'] = array();
     }
 
     static function find($search_id)
@@ -58,17 +70,12 @@ class Task
         $found_task = null;
         $tasks = Task::getAll();
         foreach($tasks as $task) {
-            $task_id = $task->getId() {
+            $task_id = $task->getId();
+            if ($task_id == $search_id) {
                 $found_task = $task;
             }
         }
         return $found_task;
-    }
-
-    static function deleteAll()
-    {
-        $GLOBALS['DB']->exec("DELETE FROM tasks;");
-        // $_SESSION['list_of_tasks'] = array();
     }
 
 }
